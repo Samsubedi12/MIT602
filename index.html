@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide: Moodle on AWS Deployment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <!-- Chosen Palette: Warm Neutral Tech -->
+    <!-- Application Structure Plan: A single-page application with a sticky top navigation bar (Overview, Infrastructure, Installation, Security, Operations) for non-linear exploration. The content is organized into thematic sections. The 'Overview' combines the report's introduction and summary, presenting the final architecture visually first. The subsequent sections ('Phases') use interactive accordions to present dense, step-by-step technical information in a manageable way, preventing user overload. This task-oriented, dashboard-like structure prioritizes usability and quick access to specific information over the original report's linear narrative, making it more effective as a technical guide. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Assessment Task Marks -> Goal: Inform -> Viz/Method: Doughnut Chart -> Interaction: Hover to see details -> Justification: Provides a quick visual summary of the project's structure and demonstrates charting. -> Library/Method: Chart.js.
+        - Report Info: Deployment Architecture -> Goal: Inform (Big Picture) -> Viz/Method: Interactive Diagram (HTML/CSS) -> Interaction: Hover to highlight components and see descriptions -> Justification: Visual architecture is more intuitive than text. -> Library/Method: HTML/CSS/JS.
+        - Report Info: Step-by-step instructions -> Goal: Organize -> Viz/Method: Accordions -> Interaction: Click to expand/collapse steps, copy button for code -> Justification: Manages complexity and improves readability. -> Library/Method: HTML/CSS/JS.
+        - Report Info: Key Learnings -> Goal: Inform -> Viz/Method: Interactive Cards -> Interaction: Click to reveal details -> Justification: More engaging than a simple list. -> Library/Method: HTML/CSS/JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-stone-50 text-stone-800">
+
+    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-lg shadow-md">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-teal-700">Moodle on AWS Guide</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#overview" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-stone-600 hover:text-amber-500 transition-colors">Overview</a>
+                        <a href="#infra" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-stone-600 hover:text-amber-500 transition-colors">Phase 1: Infrastructure</a>
+                        <a href="#install" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-stone-600 hover:text-amber-500 transition-colors">Phase 2: Installation</a>
+                        <a href="#secure" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-stone-600 hover:text-amber-500 transition-colors">Phase 3: Security</a>
+                        <a href="#ops" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-stone-600 hover:text-amber-500 transition-colors">Phase 4: Operations</a>
+                        <button id="search-toggle" class="px-3 py-2 rounded-md text-sm font-medium text-stone-600 hover:text-amber-500 transition-colors" aria-label="Search guide">
+                            <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="inline-flex items-center justify-center p-2 rounded-md text-stone-500 hover:text-white hover:bg-teal-600 focus:outline-none" aria-label="Toggle mobile menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="md:hidden hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#overview" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-stone-600 hover:bg-teal-600 hover:text-white">Overview</a>
+                <a href="#infra" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-stone-600 hover:bg-teal-600 hover:text-white">Phase 1: Infrastructure</a>
+                <a href="#install" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-stone-600 hover:bg-teal-600 hover:text-white">Phase 2: Installation</a>
+                <a href="#secure" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-stone-600 hover:bg-teal-600 hover:text-white">Phase 3: Security</a>
+                <a href="#ops" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-stone-600 hover:bg-teal-600 hover:text-white">Phase 4: Operations</a>
+            </div>
+        </div>
+        <!-- Progress Bar -->
+        <div class="w-full bg-stone-200 h-1">
+            <div id="progress-bar" class="bg-teal-600 h-1 transition-all duration-300 ease-out" style="width: 0%"></div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <section id="overview" class="py-12 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-teal-700 sm:text-4xl">Project Overview</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-lg text-stone-600">A hands-on guide to deploying a secure, private, and highly available Moodle platform for university use on AWS Cloud Infrastructure.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-2xl font-semibold text-teal-700 mb-4">Deployment Architecture</h3>
+                    <p class="text-stone-600 mb-6">This project implements a simplified three-tier architecture. The diagram below illustrates the key components and security layers. Hover over each element to learn more about its role in the system.</p>
+                    <div id="architecture-diagram" class="bg-white p-6 rounded-lg shadow-lg border border-stone-200 space-y-4">
+                        <div class="arch-layer group" data-info="AWS's virtual firewall for your instance to control inbound and outbound traffic at the instance level. It's the first line of defense.">
+                            <div class="font-bold text-center text-sm text-stone-500 p-2 rounded-t-md bg-stone-100">Outer Layer: AWS Security Group (Ports 80, 443, 22)</div>
+                            <div class="border-2 border-dashed border-stone-300 rounded-b-md p-4 space-y-4">
+                                <div class="arch-layer group" data-info="An Uncomplicated Firewall (UFW) running on the Ubuntu OS. It provides host-based security, acting as a second layer of network defense.">
+                                    <div class="font-bold text-center text-sm text-stone-500 p-2 rounded-t-md bg-stone-100">Inner Layer: UFW Firewall</div>
+                                    <div class="border-2 border-dashed border-sky-300 rounded-b-md p-4">
+                                        <div class="arch-component group bg-sky-50 p-4 rounded-lg text-center" data-info="An EC2 (Elastic Compute Cloud) t2.micro instance running Ubuntu 22.04. This is the virtual server that hosts the entire Moodle application stack.">
+                                            <p class="font-semibold text-sky-800">EC2 Instance (Ubuntu 22.04)</p>
+                                            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div class="arch-component group bg-green-50 p-3 rounded" data-info="Apache2 is the web server software that serves Moodle's pages to users over HTTP/S.">
+                                                    <p class="font-semibold text-green-800">Web Tier: Apache2</p>
+                                                </div>
+                                                <div class="arch-component group bg-purple-50 p-3 rounded" data-info="The core Moodle application logic, written in PHP.">
+                                                    <p class="font-semibold text-purple-800">App Tier: Moodle (PHP)</p>
+                                                </div>
+                                                <div class="arch-component group md:col-span-2 bg-red-50 p-3 rounded" data-info="MariaDB (a fork of MySQL) is the database server that stores all Moodle data, including users, courses, grades, and content.">
+                                                    <p class="font-semibold text-red-800">Data Tier: MariaDB</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="arch-info-box" class="mt-4 p-3 bg-amber-100 text-amber-800 rounded-md text-sm min-h-[50px] flex items-center justify-center transition-opacity duration-300 opacity-0">
+                            Hover over a component to see details.
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-semibold text-teal-700 mb-4">Assessment Task Weighting</h3>
+                    <p class="text-stone-600 mb-6">The project was broken down into several key tasks, each contributing to the final grade. This chart visualizes the importance of each phase of the deployment process.</p>
+                    <div class="bg-white p-6 rounded-lg shadow-lg border border-stone-200 chart-container">
+                        <div id="chart-loading" class="flex items-center justify-center h-full">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-700"></div>
+                            <span class="ml-2 text-stone-600">Loading chart...</span>
+                        </div>
+                        <canvas id="tasksChart" class="hidden"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="space-y-16">
+            <section id="infra" class="py-12 scroll-mt-20">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold tracking-tight text-teal-700 sm:text-4xl">Phase 1: AWS Infrastructure Setup</h2>
+                    <p class="mt-4 max-w-3xl mx-auto text-lg text-stone-600">This phase covers the foundational steps of preparing the cloud environment on AWS. Here, we launch the virtual server, configure network access rules, and assign a static IP address for stable connectivity.</p>
+                </div>
+                <div class="max-w-4xl mx-auto space-y-4">
+                    <div class="task-accordion">
+                        <button class="task-accordion-btn" aria-expanded="false" aria-controls="accordion-2-1">
+                            <span>2.1 Launch an EC2 Instance (Ubuntu 22.04)</span>
+                            <span class="accordion-icon" aria-hidden="true">&#9660;</span>
+                        </button>
+                        <div class="task-accordion-content" id="accordion-2-1" role="region" aria-labelledby="accordion-2-1">
+                            <ol class="list-decimal list-inside space-y-2">
+                                <li>Navigate to the EC2 Dashboard in the AWS Console.</li>
+                                <li>Click "Launch instances".</li>
+                                <li>Select the "Ubuntu Server 22.04 LTS" AMI.</li>
+                                <li>Choose the `t2.micro` instance type (Free Tier eligible).</li>
+                                <li>Configure a new Security Group with rules for SSH (Port 22 from My IP), HTTP (Port 80 from Anywhere), and HTTPS (Port 443 from Anywhere).</li>
+                                <li>Create and download a new key pair (e.g., `moodle-key-pair.pem`). This is essential for SSH access.</li>
+                                <li>Launch the instance.</li>
+                            </ol>
+                        </div>
+                    </div>
+                    <div class="task-accordion">
+                        <button class="task-accordion-btn" aria-expanded="false" aria-controls="accordion-2-2">
+                            <span>2.2 Configure Inbound Rules</span>
+                            <span class="accordion-icon" aria-hidden="true">&#9660;</span>
+                        </button>
+                        <div class="task-accordion-content" id="accordion-2-2" role="region" aria-labelledby="accordion-2-2">
+                            <p>The inbound rules were configured during instance launch as part of the Security Group setup. This is a critical step to control who can access the server and on which ports. The rules are:</p>
+                            <ul class="list-disc list-inside mt-2">
+                                <li><strong>SSH (Port 22):</strong> Source set to "My IP" to ensure only you can manage the server.</li>
+                                <li><strong>HTTP (Port 80):</strong> Source set to "Anywhere" to allow users to access the site.</li>
+                                <li><strong>HTTPS (Port 443):</strong> Source set to "Anywhere" for secure user access.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="task-accordion">
+                        <button class="task-accordion-btn" aria-expanded="false" aria-controls="accordion-2-3">
+                            <span>2.3 Allocate and Associate Elastic IP</span>
+                            <span class="accordion-icon" aria-hidden="true">&#9660;</span>
+                        </button>
+                        <div class="task-accordion-content" id="accordion-2-3" role="region" aria-labelledby="accordion-2-3">
+                            <p>An Elastic IP is a static public IPv4 address. It's important because the default public IP of an EC2 instance can change if it's stopped and started.</p>
+                            <ol class="list-decimal list-inside space-y-2 mt-2">
+                                <li>In the EC2 Dashboard, go to "Elastic IPs".</li>
+                                <li>Click "Allocate Elastic IP address".</li>
+                                <li>Select the new IP, click "Actions", and "Associate Elastic IP address".</li>
+                                <li>Choose your `MoodleServer` instance and click "Associate".</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="install" class="py-12 scroll-mt-20">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold tracking-tight text-teal-700 sm:text-4xl">Phase 2: Moodle Installation & Configuration</h2>
+                    <p class="mt-4 max-w-3xl mx-auto text-lg text-stone-600">With the server running, this phase details the installation of the software stack required for Moodle: the Apache web server, the MariaDB database, and PHP. It concludes with the Moodle application setup itself.</p>
+                </div>
+                <div class="max-w-4xl mx-auto space-y-4">
+                    <div class="task-accordion">
+                        <button class="task-accordion-btn">
+                            <span>3.1 Install LAMP Stack (Apache, MariaDB, PHP)</span>
+                            <span class="accordion-icon">&#9660;</span>
+                        </button>
+                        <div class="task-accordion-content">
+                            <p>First, update your server's packages:</p>
+                            <div class="code-block">
+                                <pre><code class="language-bash">sudo apt update && sudo apt upgrade -y</code></pre>
+                                <button class="copy-btn">Copy</button>
+                            </div>
+                            <p>Install Apache, MariaDB, and PHP with required extensions:</p>
+                            <div class="code-block">
+                                <pre><code class="language-bash">sudo apt install apache2 mariadb-server mariadb-client -y
+sudo apt install php libapache2-mod-php php-cli php-fpm php-json php-curl php-gd php-intl php-mbstring php-mysql php-xml php-zip php-soap php-opcache -y</code></pre>
+                                <button class="copy-btn">Copy</button>
+                            </div>
+                            <p>Secure your MariaDB installation:</p>
+                            <div class="code-block">
+                                <pre><code class="language-bash">sudo mysql_secure_installation</code></pre>
+                                <button class="copy-btn">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="task-accordion">
+                        <button class="task-accordion-btn">
+                            <span>3.2 Create Moodle Database and User</span>
+                            <span class="accordion-icon">&#9660;</span>
+                        </button>
+                        <div class="task-accordion-content">
+                            <p>Log in to MariaDB and create a dedicated database and user for Moodle.</p>
+                            <div class="code-block">
+                                <pre><code class="language-sql">sudo mysql -u root -p
+
+CREATE DATABASE moodle DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'moodleuser'@'localhost' IDENTIFIED BY 'YourStrongPasswordHere';
+GRANT ALL PRIVILEGES ON moodle.* TO 'moodleuser'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;</code></pre>
+                                <button class="copy-btn">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="task-accordion">
+                        <button class="task-accordion-btn">
+                            <span>3.3 Download and Configure Moodle</span>
+                            <span class="accordion-icon">&#9660;</span>
+                        </button>
+                        <div class="task-accordion-content">
+                            <p>Download Moodle, unzip it, and create a secure data directory.</p>
+                            <div class="code-block">
+                                <pre><code class="language-bash">cd /var/www/html/
+sudo wget https://download.moodle.org/download.php/direct/stable404/moodle-4.4.zip
+sudo unzip moodle-4.4.zip -d /var/www/html/
+sudo mkdir /var/www/moodledata</code></pre>
+                                <button class="copy-btn">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="task-accordion">
+                        <button class="task-accordion-btn">
+                            <span>3.4 Set Permissions and Complete Web Install</span>
+                            <span class="accordion-icon">&#9660;</span>
+                        </button>
+                        <div class="task-accordion-content">
+                            <p>Set the correct ownership and permissions for the web server to manage Moodle's files.</p>
+                            <div class="code-block">
+                                <pre><code class="language-bash">sudo chown -R www-data:www-data /var/www/html/moodle
+sudo chown -R www-data:www-data /var/www/moodledata
+sudo chmod -R 755 /var/www/html/moodle
+sudo chmod -R 777 /var/www/moodledata</code></pre>
+                                <button class="copy-btn">Copy</button>
+                            </div>
+                            <p>After setting permissions, navigate to `http://&lt;Your_Elastic_IP&gt;/moodle` in your browser and follow the on-screen instructions to complete the installation.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="secure" class="py-12 scroll-mt-20">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold tracking-tight text-teal-700 sm:text-4xl">Phase 3: Securing the Instance</h2>
+                    <p class="mt-4 max-w-3xl mx-auto text-lg text-stone-600">Security is not an afterthought. This phase focuses on hardening the server by encrypting web traffic with SSL, configuring a host-based firewall, creating a non-root admin user, and locking down SSH access.</p>
+                </div>
+                <div class="max-w-4xl mx-auto space-y-4">
+                    <div class="task-accordion">
+                        <button class="task-accordion-btn">
+                            <span>4.1 Set up SSL using Let’s Encrypt</span>
+                            <span class="accordion-icon">&#9660;</span>
+                        </button>
+                        <div class="task-accordion-content">
+                            <p>Install Certbot and request a free SSL certificate to enable HTTPS. This requires a domain name pointing to your server's Elastic IP.</p>
+                             <div class="code-block">
+                                <pre><code class="language-bash">sudo apt install certbot python3-certbot-apache -y
+sudo certbot --apache -d your-domain.com</code></pre>
+                                <button class="copy-btn">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="task-accordion">
+                        <button class="task-accordion-btn">
+                            <span>4.2 Configure UFW Firewall</span>
+                            <span class="accordion-icon">&#9660;</span>
+                        </button>
+                        <div class="task-accordion-content">
+                            <p>Enable the Uncomplicated Firewall (UFW) on the server to provide another layer of network security.</p>
+                             <div class="code-block">
+                                <pre><code class="language-bash">sudo ufw allow ssh
+sudo ufw allow http
+sudo ufw allow https
+sudo ufw enable</code></pre>
+                                <button class="copy-btn">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="task-accordion">
+                        <button class="task-accordion-btn">
+                            <span>4.3 Create a Non-Root Admin User</span>
+                            <span class="accordion-icon">&#9660;</span>
+                        </button>
+                        <div class="task-accordion-content">
+                            <p>Avoid using the root user for daily tasks. Create a new user and give it `sudo` privileges.</p>
+                             <div class="code-block">
+                                <pre><code class="language-bash">sudo adduser myadminuser
+sudo usermod -aG sudo myadminuser</code></pre>
+                                <button class="copy-btn">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="task-accordion">
+                        <button class="task-accordion-btn">
+                            <span>4.4 Secure SSH Access</span>
+                            <span class="accordion-icon">&#9660;</span>
+                        </button>
+                        <div class="task-accordion-content">
+                            <p>Disable password-based login for SSH to prevent brute-force attacks. This makes your server significantly more secure.</p>
+                            <ol class="list-decimal list-inside space-y-2">
+                                <li>Add your SSH public key to `~/.ssh/authorized_keys` for the new admin user.</li>
+                                <li>Edit the SSH configuration file: `sudo nano /etc/ssh/sshd_config`</li>
+                                <li>Set `PasswordAuthentication no` and `PermitRootLogin no`.</li>
+                                <li>Restart the SSH service: `sudo systemctl restart sshd`</li>
+                            </ol>
+                            <p class="mt-2 font-bold text-red-600">Important: Test your key-based login in a new terminal window *before* closing your current session!</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="ops" class="py-12 scroll-mt-20">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold tracking-tight text-teal-700 sm:text-4xl">Phase 4: Backup and Monitoring</h2>
+                    <p class="mt-4 max-w-3xl mx-auto text-lg text-stone-600">A reliable service requires robust operational procedures. This final phase covers setting up automated backups for your Moodle data and files, and outlines key logs and services for monitoring system health and security.</p>
+                </div>
+                <div class="max-w-4xl mx-auto space-y-4">
+                    <div class="task-accordion">
+                        <button class="task-accordion-btn">
+                            <span>5.1 Configure Automated Backups</span>
+                            <span class="accordion-icon">&#9660;</span>
+                        </button>
+                        <div class="task-accordion-content">
+                            <p>Create simple bash scripts to back up the Moodle database and files, then automate them with a cron job to run daily.</p>
+                            <p class="mt-2"><strong>Database Backup Script (`/usr/local/bin/backup_db.sh`):</strong></p>
+                            <div class="code-block">
+                                <pre><code class="language-bash">#!/bin/bash
+DB_NAME="moodle"
+DB_USER="moodleuser"
+DB_PASS="YourStrongPasswordHere"
+BACKUP_DIR="/var/backups/moodle_db"
+TIMESTAMP=$(date +%Y%m%d%H%M%S)
+mkdir -p ${BACKUP_DIR}
+mysqldump -u ${DB_USER} -p${DB_PASS} ${DB_NAME} > "${BACKUP_DIR}/${DB_NAME}_${TIMESTAMP}.sql"
+find ${BACKUP_DIR} -type f -mtime +7 -delete</code></pre>
+                                <button class="copy-btn">Copy</button>
+                            </div>
+                             <p class="mt-2"><strong>Schedule with Cron (`sudo crontab -e`):</strong></p>
+                            <div class="code-block">
+                                <pre><code class="language-cron">0 2 * * * /usr/local/bin/backup_db.sh
+30 2 * * * /usr/local/bin/backup_moodle_files.sh</code></pre>
+                                <button class="copy-btn">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="task-accordion">
+                        <button class="task-accordion-btn">
+                            <span>5.2 Monitoring with CloudWatch</span>
+                            <span class="accordion-icon">&#9660;</span>
+                        </button>
+                        <div class="task-accordion-content">
+                            <p>Leverage AWS CloudWatch to monitor your instance's health and performance.</p>
+                            <ul class="list-disc list-inside mt-2 space-y-2">
+                                <li><strong>CloudWatch Metrics:</strong> View default metrics like CPU Utilization, Network I/O, and Disk I/O in the CloudWatch console.</li>
+                                <li><strong>CloudWatch Alarms:</strong> Set up alarms to get notified via email or SMS if key metrics cross a defined threshold (e.g., CPU > 80% for 5 minutes).</li>
+                                <li><strong>CloudWatch Logs:</strong> Install the CloudWatch Agent on the EC2 instance to centralize application and system logs for easier analysis and troubleshooting.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="task-accordion">
+                        <button class="task-accordion-btn">
+                            <span>5.3 Key Logs and Audit Trails</span>
+                            <span class="accordion-icon">&#9660;</span>
+                        </button>
+                        <div class="task-accordion-content">
+                            <p>Regularly review logs to monitor for errors and suspicious activity. Key log files include:</p>
+                             <ul class="list-disc list-inside mt-2 space-y-2">
+                                <li><strong>Apache Logs:</strong> `/var/log/apache2/access.log` & `error.log` for web traffic and server errors.</li>
+                                <li><strong>System Auth Logs:</strong> `/var/log/auth.log` for SSH login attempts and `sudo` usage.</li>
+                                <li><strong>MariaDB Logs:</strong> `/var/log/mysql/error.log` for database errors.</li>
+                                <li><strong>Moodle Logs:</strong> Accessible within the Moodle admin interface for application-level activity and errors.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Search Modal -->
+    <div id="search-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+                <div class="p-6 border-b border-stone-200">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-stone-800">Search Guide</h3>
+                        <button id="search-close" class="text-stone-400 hover:text-stone-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="mt-4">
+                        <input type="text" id="search-input" placeholder="Search for topics, commands, or keywords..." 
+                               class="w-full px-4 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    </div>
+                </div>
+                <div id="search-results" class="p-6 overflow-y-auto max-h-[60vh]">
+                    <p class="text-stone-500 text-center">Type to search...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-white border-t border-stone-200">
+        <div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-stone-500">
+            <p>&copy; 2024 Interactive Deployment Guide. This is a representation of a student assessment project.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

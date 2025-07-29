@@ -1,0 +1,106 @@
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+.task-accordion-btn.active .accordion-icon {
+    transform: rotate(180deg);
+}
+
+.task-accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out;
+}
+
+.code-block {
+    position: relative;
+}
+
+.copy-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.copy-btn-copied {
+    background-color: #16a34a !important;
+    color: white !important;
+}
+
+.nav-link.active {
+    color: #f59e0b;
+    font-weight: 600;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    height: 300px;
+    max-height: 400px;
+}
+
+@media (min-width: 768px) {
+    .chart-container {
+        height: 350px;
+    }
+}
+
+/* Print Styles */
+@media print {
+    body {
+        background: white !important;
+        color: black !important;
+    }
+    
+    header, footer, .copy-btn, #search-toggle, #mobile-menu-btn {
+        display: none !important;
+    }
+    
+    .task-accordion-content {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+    
+    .task-accordion-btn {
+        border: 1px solid #ccc !important;
+        background: #f9f9f9 !important;
+        padding: 8px !important;
+        margin-bottom: 8px !important;
+    }
+    
+    .accordion-icon {
+        display: none !important;
+    }
+    
+    .code-block {
+        border: 1px solid #ccc !important;
+        background: #f5f5f5 !important;
+        padding: 8px !important;
+        margin: 8px 0 !important;
+        page-break-inside: avoid !important;
+    }
+    
+    pre {
+        white-space: pre-wrap !important;
+        font-family: 'Courier New', monospace !important;
+        font-size: 12px !important;
+    }
+    
+    .chart-container {
+        page-break-inside: avoid !important;
+        height: 300px !important;
+    }
+    
+    section {
+        page-break-before: auto !important;
+        page-break-after: auto !important;
+    }
+    
+    h1, h2, h3 {
+        page-break-after: avoid !important;
+    }
+} 
